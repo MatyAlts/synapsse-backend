@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: synapsse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: synapsse
+      POSTGRES_USER: synapsse
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme123}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - synapsse-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synapsse -d synapsse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: synapsse-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: production
+      
+      # Base de datos
+      DATABASE_URL: jdbc:postgresql://postgres:5432/synapsse
+      DB_USERNAME: synapsse
+      DB_PASSWORD: ${DB_PASSWORD:-changeme123}
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      
+      # Server Configuration
+      SERVER_PORT: 8080
+      
+      # Java Options
+      JAVA_OPTS: -Xmx512m -Xms256m
+      
+      # Timezone
+      TZ: UTC
+    ports:
+      - "8080:8080"
+    networks:
+      - synapsse-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/api/products || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  synapsse-network:
+    driver: bridge
