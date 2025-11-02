@@ -144,11 +144,16 @@ docker-compose down
    |----------|-------|-------------|
    | `POSTGRES_DB` | `synapsse` | Nombre de la base de datos |
    | `POSTGRES_USER` | `synapsse` | Usuario de PostgreSQL |
-   | `POSTGRES_PASSWORD` | `<password seguro>` | Password de PostgreSQL |
-   | `JWT_SECRET` | `<generado con script>` | Secreto para JWT |
+   | `POSTGRES_PASSWORD` | `<password seguro>` | ⚠️ Password de PostgreSQL (SEGURO) |
+   | `JWT_SECRET` | `<generado con script>` | ⚠️ Secreto para JWT (genera con script) |
    | `JWT_EXPIRATION` | `86400000` | Expiración del token (24h) |
    | `BACKEND_PORT` | `8080` | Puerto del backend |
-   | `GITHUB_USER` | `dmampel` | Tu usuario de GitHub (si usas registry) |
+   | `JAVA_OPTS` | `-Xmx768m -Xms256m` | Opciones de JVM |
+
+   **⚠️ IMPORTANTE:** 
+   - NO uses valores por defecto en producción
+   - Genera JWT_SECRET ejecutando: `generate-jwt-secret.ps1`
+   - Usa passwords seguras y únicas
 
 5. **Configurar el Dominio:**
    - En "Domains", click en **"Add Domain"**

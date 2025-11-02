@@ -39,6 +39,7 @@ bin/
 .env.production
 .env.*.local
 *.env
+!.env.example
 
 # Logs
 *.log
